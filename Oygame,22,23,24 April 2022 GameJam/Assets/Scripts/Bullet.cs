@@ -8,49 +8,36 @@ public class Bullet : MonoBehaviour
     [SerializeField] float speed = 20f;
 
     private Rigidbody2D _rigidbody;
-    private PlayerController _player;
+    private PlayerMovement _player;
 
     private float _xSpeed;
-    private float _ySpeed;
     
     // Start is called before the first frame update
     private void Start()
     {
         _rigidbody = GetComponent<Rigidbody2D>();
-        _player = FindObjectOfType<PlayerController>();
+        _player = FindObjectOfType<PlayerMovement>();
 
-        _xSpeed = -_player.transform.localScale.x * speed;
-        _ySpeed = -_player.transform.localScale.y * speed;
-        
-        Destroy(gameObject, 3f);  
+        _xSpeed = _player.transform.localScale.x * speed;
     }
 
     // Update is called once per frame
     private void Update()
     {
-        if (_player.GetIsVertıcal())
-        {
-            _rigidbody.velocity = new Vector2(0f, -_ySpeed);
-        }
-        else
-        {
-            _rigidbody.velocity = new Vector2(_xSpeed, 0f);
-        }
+        _rigidbody.velocity = new Vector2(_xSpeed, 0f);
     }
 
     private void OnTriggerEnter2D(Collider2D col)
     {
-        if (col.tag.Equals("Enemy") && !col.tag.Equals("Player"))
+        if (col.tag.Equals("Enemy"))
         {
-            // TODO: Düşmana vur
+            Destroy(col.gameObject );
         }
+        Destroy(gameObject);
     }
 
     private void OnCollisionEnter2D(Collision2D col)
     {
-        if (!col.gameObject.tag.Equals("Player"))
-        {
-            Destroy(gameObject);  
-        }
+        Destroy(gameObject);
     }
 }

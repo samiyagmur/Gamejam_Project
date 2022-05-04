@@ -7,13 +7,11 @@ using UnityEngine.SceneManagement;
 
 public class GameSession : MonoBehaviour
 {
-    [SerializeField] private float playerHealth = 100f;
-    [SerializeField] private float playerPower1 = 100f;
-    [SerializeField] private float playerPower2 = 0f;
-    [SerializeField] private float playerPower3 = 0f;
-
-    private bool _gameOver;
-    private float _maxPlayerHealthHealth = 100f;
+    [SerializeField] private int playerLives = 3;
+    [SerializeField] private int score = 0;
+    [SerializeField] private TextMeshProUGUI livesText;
+    [SerializeField] private TextMeshProUGUI scoreText;
+    [SerializeField] private Canvas canvas;
 
     private void Awake()
     {
@@ -31,74 +29,68 @@ public class GameSession : MonoBehaviour
 
     private void Start()
     {
-        // TODO: Power'ları ve health'i göster
+        livesText.text = playerLives.ToString();
+        scoreText.text = score.ToString();
     }
 
-    public float GetPlayerHealth()
+    private void Update()
     {
-        return playerHealth;
-    } 
-    
-    public void SetPlayerHealth(float value)
-    {
-        playerHealth += value;
+        if (SceneManager.GetActiveScene().name.StartsWith("Level"))
+        {
+            canvas.gameObject.SetActive(true);
+        }
+        else
+        {
+            canvas.gameObject.SetActive(false);
+        }
+    }
 
-        if (playerHealth >= _maxPlayerHealthHealth)
+    public void ProcessPlayerDeath()
+    {
+        if (playerLives > 1)
         {
-            playerHealth = _maxPlayerHealthHealth;
+            TakeLife();
         }
-        
-        Debug.Log("playerHealth : " + playerHealth);
-        
-        if (playerHealth <= 0)
+        else
         {
-            _gameOver = true;
-            PlayerController player = FindObjectOfType<PlayerController>();
-            player.SetIsAlive(false);
-            player.PlayParticleSystem();
-            
-            // TODO: Game Over yazısıını göster
-            
-            // Oyuna x saniye sonra yeniden başlat
-            Invoke("ResetGameSession", 5f);
+            Invoke("ResetGameSession", 1f);
         }
-    } 
-    
-    public float GetPlayerPower1()
+    }
+
+    public void AddToScore(int pointsToAdd)
     {
-        return playerPower1;
-    } 
+        score += pointsToAdd;
+        scoreText.text = score.ToString();
+    }
     
-    public void SetPlayerPower1(float value)
+    public void ResetScore()
     {
-        playerPower1 += value;
-    } 
+        score += 0;
+        scoreText.text = score.ToString();
+    }
     
-    public float GetPlayerPower2()
+    private void TakeLife()
     {
-        return playerPower2;
-    } 
+        playerLives--;
+        
+        Invoke("ResetSceneSession", 1f);
+        
+        livesText.text = playerLives.ToString();
+    }
     
-    public void SetPlayerPower2(float value)
+    private void ResetSceneSession()
     {
-        playerPower2 += value;
-    } 
-    
-    public float GetPlayerPower3()
-    {
-        return playerPower3;
-    } 
-    
-    public void SetPlayerPower3(float value)
-    {
-        playerPower3 += value;
-    } 
+        var currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+        SceneManager.LoadScene(currentSceneIndex);
+    }
 
     private void ResetGameSession()
     {
-        // FindObjectOfType<ScenePersist>().ResetScenePersist();
+        FindObjectOfType<ScenePersist>().ResetScenePersist();
+        score = 0;
+        scoreText.text = score.ToString();
         
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        SceneManager.LoadScene(0);
         Destroy(gameObject);
     }
 }
